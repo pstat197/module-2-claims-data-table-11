@@ -12,7 +12,7 @@ date: today
 
 ### HTML scraping
 
-Does including header content improve predictions? Answer the question and provide quantitative evidence supporting your answer.
+Does including header content improve predictions? 
 
 ### Bigrams
 
