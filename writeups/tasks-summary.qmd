@@ -1,8 +1,14 @@
 ---
 title: "Summary of exploratory tasks"
-author: 'YOUR NAMES HERE'
+author: 
+- Ella Yang
+- Jimmy Wu
+- Alex Morifusa
+- Naira Younas
 date: today
 ---
+
+
 
 ### HTML scraping
 
