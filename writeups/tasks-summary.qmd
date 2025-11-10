@@ -10,6 +10,7 @@ date: today
 ```{r, message = FALSE, warning = FALSE}
 library(readr)
 library(dplyr)
+library(here)
 library(knitr)
 library(kableExtra)
 ```
@@ -17,11 +18,26 @@ library(kableExtra)
 
 ### HTML scraping
 
+```{r, message=FALSE, warning=FALSE}
+here::i_am("writeups/tasks-summary.qmd")
+res <- readRDS(here("results", "task1-logpcr-summaries.rds"))
+
+res %>%
+arrange(metric, desc(mean)) %>%
+mutate(mean = round(mean, 4), std_err = round(std_err, 4)) %>%
+kbl(
+caption = "Logistic PCR (5-fold CV, max_tokens=30000, PCs=300, grid=20)",
+align = "lccc"
+) %>%
+kable_classic(full_width = FALSE)
+```
+
+
 #### 1) Are binary class predictions improved using logistic PCR?
 Using logistic PCR with TF-IDF + PCA gives solid performance on the binary task ($\approx$ 0.76 accuracy and 0.82-0.83 ROC-AUC). According to our study, logistic PCR provides a strong baseline for text classification and is the method we use for the comparison below.
 
 #### 2) Does including header content improve predictions?
-Yes. Adding headers increases Accuracy by +0.0038 (0.7611 vs 0.7573) and ROC-AUC by +0.0074 (0.8279 vs 0.8205).
+Yes. Adding headers increases Accuracy by +0.0038 (from 0.7611 to 0.7573) and ROC-AUC by +0.0074 (from 0.8279 to 0.8205).
 
 These gains are small as they are around $\approx$ 0.4-0.7 percentage points but are consistent across both metrics. Given the reported standard errors of around 0.009-0.011, the improvement is fair but not as meaningful. However, the ROC-AUC increase is comparable to the SE and likely meaningful in practice, so we recommend including header text in the pipeline.
 

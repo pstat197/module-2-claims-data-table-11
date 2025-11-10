@@ -74,6 +74,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="tasks-summary_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="tasks-summary_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="tasks-summary_files/libs/bootstrap/bootstrap-81267100e462c21b3d6c0d5bf76a3417.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="tasks-summary_files/libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="tasks-summary_files/libs/lightable-0.0.1/lightable.css" rel="stylesheet">
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -150,18 +152,71 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(here)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <section id="html-scraping" class="level3">
 <h3 class="anchored" data-anchor-id="html-scraping">HTML scraping</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>here<span class="sc">::</span><span class="fu">i_am</span>(<span class="st">"writeups/tasks-summary.qmd"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="fu">here</span>(<span class="st">"results"</span>, <span class="st">"task1-logpcr-summaries.rds"</span>))</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>res <span class="sc">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">arrange</span>(metric, <span class="fu">desc</span>(mean)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">mean =</span> <span class="fu">round</span>(mean, <span class="dv">4</span>), <span class="at">std_err =</span> <span class="fu">round</span>(std_err, <span class="dv">4</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">kbl</span>(</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">caption =</span> <span class="st">"Logistic PCR (5-fold CV, max_tokens=30000, PCs=300, grid=20)"</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">align =</span> <span class="st">"lccc"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">kable_classic</span>(<span class="at">full_width =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<table class="lightable-classic caption-top table table-sm table-striped small" data-quarto-postprocess="true">
+<caption>Logistic PCR (5-fold CV, max_tokens=30000, PCs=300, grid=20)</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th">setting</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">metric</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">mean</th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">std_err</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">headers_plus_paragraphs</td>
+<td style="text-align: center;">accuracy</td>
+<td style="text-align: center;">0.7611</td>
+<td style="text-align: center;">0.0092</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">paragraphs_only</td>
+<td style="text-align: center;">accuracy</td>
+<td style="text-align: center;">0.7573</td>
+<td style="text-align: center;">0.0089</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">headers_plus_paragraphs</td>
+<td style="text-align: center;">roc_auc</td>
+<td style="text-align: center;">0.8279</td>
+<td style="text-align: center;">0.0113</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">paragraphs_only</td>
+<td style="text-align: center;">roc_auc</td>
+<td style="text-align: center;">0.8205</td>
+<td style="text-align: center;">0.0110</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <section id="are-binary-class-predictions-improved-using-logistic-pcr" class="level4">
 <h4 class="anchored" data-anchor-id="are-binary-class-predictions-improved-using-logistic-pcr">1) Are binary class predictions improved using logistic PCR?</h4>
 <p>Using logistic PCR with TF-IDF + PCA gives solid performance on the binary task (<span class="math inline">\(\approx\)</span> 0.76 accuracy and 0.82-0.83 ROC-AUC). According to our study, logistic PCR provides a strong baseline for text classification and is the method we use for the comparison below.</p>
 </section>
 <section id="does-including-header-content-improve-predictions" class="level4">
 <h4 class="anchored" data-anchor-id="does-including-header-content-improve-predictions">2) Does including header content improve predictions?</h4>
-<p>Yes. Adding headers increases Accuracy by +0.0038 (0.7611 vs 0.7573) and ROC-AUC by +0.0074 (0.8279 vs 0.8205).</p>
+<p>Yes. Adding headers increases Accuracy by +0.0038 (from 0.7611 to 0.7573) and ROC-AUC by +0.0074 (from 0.8279 to 0.8205).</p>
 <p>These gains are small as they are around <span class="math inline">\(\approx\)</span> 0.4-0.7 percentage points but are consistent across both metrics. Given the reported standard errors of around 0.009-0.011, the improvement is fair but not as meaningful. However, the ROC-AUC increase is comparable to the SE and likely meaningful in practice, so we recommend including header text in the pipeline.</p>
 <p>For the binary claims classifier, logistic PCR achieves around 76% CV accuracy. Including headers alongside paragraphs yields a small, consistent improvement in both accuracy and ROC-AUC and should be considered in subsequent modeling.</p>
 <p>Does including header content improve predictions?</p>
