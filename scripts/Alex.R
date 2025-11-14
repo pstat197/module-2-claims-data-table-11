@@ -1,5 +1,4 @@
 setwd("/Users/alexmorifusa/module-2-claims-data-table-11")
-source("scripts/best_model-Alex.R")
 
 install.packages(c("tidyverse","quanteda","glmnet","xgboost","caret","textrecipes","recipes","rsample","yardstick","R.utils","xml2","rvest"))
 
