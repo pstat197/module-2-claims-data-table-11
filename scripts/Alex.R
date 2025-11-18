@@ -10,61 +10,86 @@ train_df <- claims_clean[split_idx, ]
 test_df  <- claims_clean[-split_idx, ]
 
 train_text <- train_df$text_clean
-train_labels <- as.numeric(train_df$bclass) - 1
-keep_idx <- !is.na(train_text) & !is.na(train_labels)
+train_labels_bin <- as.numeric(train_df$bclass) - 1
+train_labels_multi <- as.numeric(train_df$mclass)
+keep_idx <- !is.na(train_text) & !is.na(train_labels_bin) & !is.na(train_labels_multi)
 train_text <- train_text[keep_idx]
-train_labels <- train_labels[keep_idx]
-
-preprocess_layer <- keras3::layer_text_vectorization(
-  standardize = NULL,
-  split = "whitespace",
-  max_tokens = 20000,
-  output_mode = "tf_idf"
-)
-preprocess_layer |> keras3::adapt(train_text)
+train_labels_bin <- train_labels_bin[keep_idx]
+train_labels_multi <- train_labels_multi[keep_idx] - 1
 
 text_layer <- layer_text_vectorization(
   max_tokens = 20000,
-  output_mode = "tf_idf"
+  output_mode = "int",
+  output_sequence_length = 200
 )
+text_layer |> adapt(train_text)
 
-text_layer |> keras3::adapt(train_text)
-
-model <- keras_model_sequential(
+binary_model <- keras_model_sequential(
   layers = list(
     text_layer,
-    layer_dropout(rate = 0.2),
-    layer_dense(units = 64, activation = "relu"),
-    layer_dropout(rate = 0.3),
+    layer_embedding(input_dim = 20000, output_dim = 64, mask_zero = TRUE),
+    layer_bidirectional(layer = layer_lstm(units = 32)),
     layer_dense(units = 32, activation = "relu"),
     layer_dense(units = 1, activation = "sigmoid")
   )
 )
-
-model |> compile(
+binary_model |> compile(
   optimizer = "adam",
   loss = "binary_crossentropy",
-  metrics = "binary_accuracy"
+  metrics = "accuracy"
 )
 
-history <- model |> fit(
+binary_model |> fit(
   x = train_text,
-  y = train_labels,
+  y = train_labels_bin,
   batch_size = 32,
-  epochs = 10,
+  epochs = 5,
   validation_split = 0.2
 )
+
+multi_model <- keras_model_sequential(
+  layers = list(
+    text_layer,
+    layer_embedding(input_dim = 20000, output_dim = 64, mask_zero = TRUE),
+    layer_bidirectional(layer = layer_lstm(units = 32)),
+    layer_dense(units = 32, activation = "relu"),
+    layer_dense(units = length(unique(train_labels_multi)), activation = "softmax")
+  )
+)
+
+multi_model |> compile(
+  optimizer = "adam",
+  loss = "sparse_categorical_crossentropy",
+  metrics = "accuracy"
+)
+
+multi_model |> fit(
+  x = train_text,
+  y = train_labels_multi,
+  batch_size = 32,
+  epochs = 5,
+  validation_split = 0.2
+)
+
+load("data/claims-test.RData")
 
 test_text <- test_df$text_clean
 keep_idx_test <- !is.na(test_text)
 test_text <- test_text[keep_idx_test]
 
-pred_probs <- predict(model, test_text)
-pred_classes <- ifelse(pred_probs > 0.5, 1, 0)
+binary_probs <- predict(binary_model, test_text)
+binary_pred <- ifelse(binary_probs > 0.5, 1, 0)
+
+multi_probs <- predict(multi_model, test_text)
+multi_pred <- apply(multi_probs, 1, which.max)
 
 pred_df <- tibble(
   .id = test_df$.id[keep_idx_test],
-  bclass.pred = pred_classes
+  bclass.pred = binary_pred,
+  mclass.pred = multi_pred
 )
 
-saveRDS(pred_df, "results/modelAlex.rds")
+dir.create("results", showWarnings = FALSE)
+saveRDS(binary_model, "results/binary_model.rds")
+saveRDS(multi_model, "results/multi_model.rds")
+saveRDS(pred_df, "results/pred_df.rds")
