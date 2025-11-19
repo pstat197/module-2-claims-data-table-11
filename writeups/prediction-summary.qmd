@@ -20,9 +20,7 @@ In one paragraph lay out your preprocessing pipeline. No need to provide exact s
 
 -   how cleaned text was represented quantitatively
 
-For the binary classification task, we employed a deep learning approach using a sequential neural network in Keras. The model begins with a layer_text_vectorization to convert raw text into integer sequences, with a maximum vocabulary of 20,000 tokens and a fixed sequence length of 200. The vectorized text is passed through an embedding layer of dimension 64 to create dense word representations, followed by a bidirectional LSTM with 32 units to capture contextual information from both directions of the text. The sequential output is then processed through a dense layer of 32 units with ReLU activation before reaching the final single-unit output layer with a sigmoid activation function for binary prediction. The model was compiled using the Adam optimizer, binary crossentropy loss, and accuracy as the evaluation metric. Training was performed for 5 epochs with a batch size of 32, using 20% of the training data as a validation split.
-
-For the multiclass classification task, a deep learning approach using a sequential neural network was employed. The model begins with a text vectorization layer that converts raw text into integer sequences with a vocabulary limit of 20,000 tokens and a fixed sequence length of 200. This is followed by an embedding layer of dimension 64 to create dense vector representations of the tokens. A bidirectional LSTM layer with 32 units captures sequential dependencies from both forward and backward directions in the text. The output is then passed through a fully connected dense layer with 32 units and ReLU activation, and finally through a dense softmax layer with 5 units to produce probabilities for each of the five classes. The model was trained using the Adam optimizer, with a sparse categorical cross-entropy loss suitable for integer-encoded labels, over 8 epochs and a validation split of 20% of the training data. Hyperparameters, including embedding dimension, LSTM units, and dense layer size, were chosen to balance model complexity and overfitting, given the size of the training dataset.
+The preprocessing pipeline began by extracting the main textual content from the HTML claim files, including paragraphs, headings, and list items, while dropping scripts, style information, menus, and other non-textual elements. After extraction, the text was cleaned by removing punctuation, converting to lowercase, stripping HTML artifacts, and normalizing whitespace so that each document produced a consistent and readable “text_clean” field. The cleaned text was then converted into a quantitative representation using the Keras text vectorization layer. This layer tokenized the text, restricted the vocabulary to the twenty thousand most frequent tokens, and converted each document into a fixed-length sequence of two hundred integer token IDs. These token sequences served as the numerical inputs for both the binary and multiclass predictive models.
 
 ### Methods
 
@@ -34,8 +32,17 @@ Describe your final predictive models. Include one paragraph with details on the
 
 -   training method
 
+The binary prediction model was implemented using a neural sequence architecture created with Keras and TensorFlow. The model began with a text vectorization layer that transformed the raw text into fixed-length token sequences. These were passed into an embedding layer with sixty-four dimensions and masking enabled, followed by a bidirectional LSTM with thirty-two units so that the model could capture context from both directions of the text. A dense layer with thirty-two ReLU units provided additional nonlinear transformation, and a final single-unit sigmoid output was used to model the probability of belonging to class one. Hyperparameters such as sequence length, vocabulary size, embedding dimension, and LSTM size were chosen using standard practices for medium-sized NLP problems. The training procedure used the Adam optimizer, binary cross-entropy loss, a batch size of thirty-two, and five training epochs with a twenty percent validation split.
+
+The multiclass model used the same general architecture as the binary model but with adjustments for five output categories. Text was vectorized into integer token sequences using the same vocabulary size and sequence length settings. These sequences were fed into a sixty-four-dimension embedding layer and then through a bidirectional LSTM with thirty-two units. A dense layer with thirty-two ReLU units produced intermediate representations prior to the output layer. The final layer used a softmax activation with five units so that the model output a probability distribution over the five classes. Hyperparameters were kept consistent with the binary model for comparability. The model was trained using the Adam optimizer, sparse categorical cross-entropy loss, a batch size of thirty-two, eight training epochs, and a twenty percent validation split. Class predictions were obtained by selecting the class with the highest predicted probability.
+
 ### Results
 
 Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]
+
+```{r}
+combined_results <- read_csv("results/combined_metrics.csv")
+combined_results
+```
 
 [^1]: Read [this article](https://yardstick.tidymodels.org/articles/multiclass.html) on multiclass averaging.
