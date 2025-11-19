@@ -47,13 +47,24 @@ binary_model |> fit(
   validation_split = 0.2
 )
 
+text_layer_multi <- layer_text_vectorization(
+  max_tokens = 20000,
+  output_mode = "int",
+  output_sequence_length = 200
+)
+text_layer_multi |> adapt(train_text)
+
 multi_model <- keras_model_sequential(
   layers = list(
-    text_layer,
-    layer_embedding(input_dim = 20000, output_dim = 64, mask_zero = TRUE),
-    layer_bidirectional(layer = layer_lstm(units = 32)),
-    layer_dense(units = 32, activation = "relu"),
-    layer_dense(units = length(unique(train_labels_multi)), activation = "softmax")
+    text_layer_multi,
+    layer_embedding(input_dim = 20000, output_dim = 128, mask_zero = TRUE),
+    layer_bidirectional(
+      layer = layer_lstm(units = 64, return_sequences = TRUE)
+    ),
+    layer_global_max_pooling_1d(),
+    layer_dense(units = 64, activation = "relu"),
+    layer_dropout(rate = 0.5),
+    layer_dense(units = 5, activation = "softmax")
   )
 )
 
@@ -61,14 +72,6 @@ multi_model |> compile(
   optimizer = "adam",
   loss = "sparse_categorical_crossentropy",
   metrics = "accuracy"
-)
-
-multi_model |> fit(
-  x = train_text,
-  y = train_labels_multi,
-  batch_size = 32,
-  epochs = 5,
-  validation_split = 0.2
 )
 
 load("data/claims-test.RData")
@@ -89,7 +92,23 @@ pred_df <- tibble(
   mclass.pred = multi_pred
 )
 
+pred_df
+
 dir.create("results", showWarnings = FALSE)
 saveRDS(binary_model, "results/binary_model.rds")
 saveRDS(multi_model, "results/multi_model.rds")
 saveRDS(pred_df, "results/pred_df.rds")
+
+test_labels_bin  <- as.numeric(test_df$bclass) - 1
+test_labels_multi <- as.numeric(test_df$mclass) - 1
+
+test_labels_bin  <- test_labels_bin[keep_idx_test]
+test_labels_multi <- test_labels_multi[keep_idx_test]
+
+binary_accuracy <- mean(binary_pred == test_labels_bin)
+multi_accuracy  <- mean(multi_pred == test_labels_multi)
+
+binary_accuracy
+multi_accuracy
+
+table(train_labels_multi)
