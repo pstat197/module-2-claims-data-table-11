@@ -10,31 +10,13 @@ date: today
 
 ### Abstract
 
-Provide a 3-5 sentence summary of your work on the primary task. Indicate what input data was used, what method was used for binary class predictions, what method was used for multiclass predictions, and what estimated accuracies were achieved.
-
 I used cleaned text extracted from claim R files as the primary input data, focusing on de-tagged and normalized text fields. For binary classification, I trained a bidirectional LSTM neural network using an embedding layer and a sigmoid output to predict whether each claim belonged to class 0 or 1. For multiclass prediction, I used a similar bidirectional LSTM architecture but with a softmax output layer to classify claims into five possible categories. The binary model achieved an estimated accuracy of approximately 0.78, while the multiclass model achieved an estimated accuracy of approximately 0.74 on the held-out test set. These results show that the LSTM-based models captured meaningful patterns in the text and were effective for both prediction tasks.
 
 ### Preprocessing
 
-In one paragraph lay out your preprocessing pipeline. No need to provide exact step-by-step detail; just give an overview of the main components:
-
--   what text content was extracted from HTML
-
--   how text was cleaned
-
--   how cleaned text was represented quantitatively
-
 The preprocessing pipeline began by extracting the main textual content from the HTML claim files, including paragraphs, headings, and list items, while dropping scripts, style information, menus, and other non-textual elements. After extraction, the text was cleaned by removing punctuation, converting to lowercase, stripping HTML artifacts, and normalizing whitespace so that each document produced a consistent and readable “text_clean” field. The cleaned text was then converted into a quantitative representation using the Keras text vectorization layer. This layer tokenized the text, restricted the vocabulary to the twenty thousand most frequent tokens, and converted each document into a fixed-length sequence of two hundred integer token IDs. These token sequences served as the numerical inputs for both the binary and multiclass predictive models.
 
 ### Methods
-
-Describe your final predictive models. Include one paragraph with details on the binary classification approach, and one on the multiclass approach. Include for each:
-
--   what ML/statistical method was used
-
--   model specification and hyperparameter selection
-
--   training method
 
 The binary prediction model was implemented using a neural sequence architecture created with Keras and TensorFlow. The model began with a text vectorization layer that transformed the raw text into fixed-length token sequences. These were passed into an embedding layer with sixty-four dimensions and masking enabled, followed by a bidirectional LSTM with thirty-two units so that the model could capture context from both directions of the text. A dense layer with thirty-two ReLU units provided additional nonlinear transformation, and a final single-unit sigmoid output was used to model the probability of belonging to class one. Hyperparameters such as sequence length, vocabulary size, embedding dimension, and LSTM size were chosen using standard practices for medium-sized NLP problems. The training procedure used the Adam optimizer, binary cross-entropy loss, a batch size of thirty-two, and five training epochs with a twenty percent validation split.
 
@@ -42,11 +24,8 @@ The multiclass model used the same general architecture as the binary model but 
 
 ### Results
 
-Indicate the predictive accuracy of the binary classifications and the multiclass classifications. Provide a table for each, and report sensitivity, specificity, and accuracy.[^1]
-
 ```{r}
 combined_results <- read_csv("results/combined_metrics.csv")
 combined_results
 ```
 
-[^1]: Read [this article](https://yardstick.tidymodels.org/articles/multiclass.html) on multiclass averaging.
