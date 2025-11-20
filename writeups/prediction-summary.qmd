@@ -24,8 +24,10 @@ The multiclass model used the same general architecture as the binary model but 
 
 ### Results
 
-```{r, echo=FALSE}
-combined_results <- read_csv("results/combined_metrics.csv")
-combined_results
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+library(readr)
+library(knitr)
+combined_results <- read_csv("../results/combined_metrics.csv")
+knitr::kable(combined_results)
 ```
 
