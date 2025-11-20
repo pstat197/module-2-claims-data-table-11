@@ -1,25 +1,57 @@
 ---
 title: "Summary of exploratory tasks"
-author: 'YOUR NAMES HERE'
+author: 
+- Ella Yang
+- Jimmy Wu
+- Alex Morifusa
+- Naira Younas
 date: today
 ---
+```{r, message = FALSE, warning = FALSE, echo=FALSE}
+library(readr)
+library(dplyr)
+library(here)
+library(knitr)
+library(kableExtra)
+```
+
 
 ### HTML scraping
 
-Does including header content improve predictions? Answer the question and provide quantitative evidence supporting your answer.
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
+here::i_am("writeups/tasks-summary.qmd")
+res <- readRDS(here("results", "task1-logpcr-summaries.rds"))
+
+res %>%
+arrange(metric, desc(mean)) %>%
+mutate(mean = round(mean, 4), std_err = round(std_err, 4)) %>%
+kbl(
+caption = "Logistic PCR (5-fold CV, max_tokens=30000, PCs=300, grid=20)",
+align = "lccc"
+) %>%
+kable_classic(full_width = FALSE)
+```
+
+
+#### 1) Are binary class predictions improved using logistic PCR?
+Using logistic PCR with TF-IDF + PCA gives solid performance on the binary task ($\approx$ 0.76 accuracy and 0.82-0.83 ROC-AUC). According to our study, logistic PCR provides a strong baseline for text classification and is the method we use for the comparison below.
+
+#### 2) Does including header content improve predictions?
+Yes. Adding headers increases Accuracy by +0.0038 (from 0.7611 to 0.7573) and ROC-AUC by +0.0074 (from 0.8279 to 0.8205).
+
+These gains are small as they are around $\approx$ 0.4-0.7 percentage points but are consistent across both metrics. Given the reported standard errors of around 0.009-0.011, the improvement is fair but not as meaningful. However, the ROC-AUC increase is comparable to the SE and likely meaningful in practice, so we recommend including header text in the pipeline.
+
+For the binary claims classifier, logistic PCR achieves around 76\% CV accuracy. Including headers alongside paragraphs yields a small, consistent improvement in both accuracy and ROC-AUC and should be considered in subsequent modeling.
 
 ### Bigrams
 
-Do bigrams capture additional information relevant to the classification of interest? Answer the question, **briefly** describe what analysis you conducted to arrive at your answer, and provide quantitative evidence supporting your answer.
+Do bigrams capture additional information relevant to the classification of interest?
 
-### Neural net
+Yes. Although bigrams alone produced weaker performance (accuracy 0.582, AUC 0.616), combining the bigram principal components with the Task-1 unigram model's predicted log-odds in a second logistic regression ("stacking") substantially improved performance to 0.789 accuracy and 0.884 AUC on the validation split.
+This indicates that bigram co-occurrence patterns provide additional complementary information that the unigram model does not capture.
 
-Summarize the neural network model you trained by desribing:
+### Neural network
 
--   architecture
+To build and train a neural network for binary classification, I began with the sample model provided in nlp-model-development.R, which achieved a testing accuracy of 76%. I then experimented with several simple modifications to see how they affected performance, including adjusting the hidden-layer size, number of hidden layers, dropout rate, activation functions, learning rate, and number of training epochs. Most of these changes produced only minor differences in accuracy. However, increasing the dropout rate from 0.2 to 0.3 and adding a ReLU activation function in the hidden layer improved the model’s accuracy by approximately 3–4%. I also tested using multiple hidden layers with ReLU, but this did not further improve predictive performance. Finally, replacing ReLU with a GeLU activation function in the hidden layer yielded the best improvement, producing a testing accuracy of 82.48%. My finalized neural network architecture consisted of a preprocessing layer that converts the cleaned text into TD-IDF scores, followed by a dropout layer (rate = 0.3), a dense hidden layer with 25 units and a GeLU activation function, a second dropout layer (rate = 0.3), and an output layer with 1 unit using a sigmoid activation. The model was optimized using the Adam optimizer with the default learning rate (0.001) and trained with a binary cross-entropy loss function. Training used a 0.3 validation split and ran for 5 epochs. The final predictive accuracy on the held-out testing set was 82.48%.
 
--   optimization and loss
-
--   training epochs
-
--   predictive accuracy
+For multiclass classification, I experimented with the same model modifications used in the binary case, including adjusting hidden-layer sizes, dropout rate, activation functions, and the number of training epochs. Unlike the binary model, adding an additional hidden layer and using ReLU activation functions in both hidden layers improved the predictive accuracy. My finalized architecture consisted of a preprocessing layer, followed by a dropout layer (rate = 0.3), a dense hidden layer with 50 units and a ReLU activation function, a second dropout layer (rate = 0.3), a dense hidden layer with 25 units and a ReLU activation, and a third dropout layer (rate = 0.3). The output layer contained num_classes units with a softmax activation function for multiclass prediction. The model was trained using the Adam optimizer with the default learning rate, along with a sparse categorical cross-entropy loss function. Training used a 0.3 validation split and ran for 5 epochs. The final predictive accuracy on the held-out testing set was 78.5%.
