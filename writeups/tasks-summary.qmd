@@ -7,7 +7,7 @@ author:
 - Naira Younas
 date: today
 ---
-```{r, message = FALSE, warning = FALSE}
+```{r, message = FALSE, warning = FALSE, echo=FALSE}
 library(readr)
 library(dplyr)
 library(here)
@@ -18,7 +18,7 @@ library(kableExtra)
 
 ### HTML scraping
 
-```{r, message=FALSE, warning=FALSE}
+```{r, message=FALSE, warning=FALSE, echo=FALSE}
 here::i_am("writeups/tasks-summary.qmd")
 res <- readRDS(here("results", "task1-logpcr-summaries.rds"))
 
